@@ -36,7 +36,7 @@ configure_file(config.h.in "${CMAKE_CURRENT_BINARY_DIR}/config-sp.h")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # adding sources
-set(LIBSERIALPORT_SOURCES libserialport_internal.h libserialport.h serialport.c)
+set(LIBSERIALPORT_SOURCES libserialport_internal.h libserialport.h serialport.c serialport.cpp)
 if(APPLE)
     list(APPEND LIBSERIALPORT_SOURCES macosx.c)
     check_include_file(IOKit/IOKitLib.h _IOKIT_INCLUDE)
