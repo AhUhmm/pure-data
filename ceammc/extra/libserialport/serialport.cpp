@@ -44,6 +44,9 @@ void SerialPortConfig::operator=(const SerialPortConfig& cfg)
 
 #define GET_CONFIG_VALUE(value, type, def)      \
     {                                           \
+        if (!config_)                           \
+            return def;                         \
+                                                \
         type value = def;                       \
         sp_get_config_##value(config_, &value); \
         return value;                           \
@@ -61,7 +64,7 @@ int SerialPortConfig::bits() const
 
 int SerialPortConfig::stopBits() const
 {
-    GET_CONFIG_VALUE(baudrate, int, -1);
+    GET_CONFIG_VALUE(stopbits, int, -1);
 }
 
 sp_parity SerialPortConfig::parity() const

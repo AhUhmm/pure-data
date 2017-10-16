@@ -152,6 +152,9 @@ TEST_CASE("serialport", "[serialport]")
             REQUIRE(cfg.baudRate() != -1);
             REQUIRE(cfg.bits() != -1);
 
+            cfg.setBaudRate(8912);
+            REQUIRE(cfg.baudRate() == 8912);
+
             if (s.open(MAC_MODEM, SerialPort::WRITE)) {
                 REQUIRE(s.isOpened());
                 REQUIRE(s.close());
@@ -169,10 +172,39 @@ TEST_CASE("serialport", "[serialport]")
         SerialPortConfig cfg;
         REQUIRE(cfg.baudRate() == -1);
         REQUIRE(cfg.bits() == -1);
-        cfg.setBaudRate(8192);
+        REQUIRE(cfg.stopBits() == -1);
+        REQUIRE(cfg.parity() == SP_PARITY_INVALID);
+        REQUIRE(cfg.cts() == SP_CTS_INVALID);
+        REQUIRE(cfg.dsr() == SP_DSR_INVALID);
+        REQUIRE(cfg.dtr() == SP_DTR_INVALID);
+        REQUIRE(cfg.rts() == SP_RTS_INVALID);
+        REQUIRE(cfg.xOnxOff() == SP_XONXOFF_INVALID);
 
-        SerialPortConfig cfg2(cfg);
-        REQUIRE(cfg2.baudRate() == 8192);
-        REQUIRE(cfg2.bits() == -1);
+        cfg.setBaudRate(1024);
+        REQUIRE(cfg.baudRate() == 1024);
+
+        cfg.setBits(8);
+        REQUIRE(cfg.bits() == 8);
+
+        cfg.setStopBits(2048);
+        REQUIRE(cfg.stopBits() == 2048);
+
+        cfg.setParity(SP_PARITY_EVEN);
+        REQUIRE(cfg.parity() == SP_PARITY_EVEN);
+
+        cfg.setCts(SP_CTS_FLOW_CONTROL);
+        REQUIRE(cfg.cts() == SP_CTS_FLOW_CONTROL);
+
+        cfg.setDsr(SP_DSR_FLOW_CONTROL);
+        REQUIRE(cfg.dsr() == SP_DSR_FLOW_CONTROL);
+
+        cfg.setDtr(SP_DTR_FLOW_CONTROL);
+        REQUIRE(cfg.dtr() == SP_DTR_FLOW_CONTROL);
+
+        cfg.setRts(SP_RTS_ON);
+        REQUIRE(cfg.rts() == SP_RTS_ON);
+
+        cfg.setXOnxOff(SP_XONXOFF_INOUT);
+        REQUIRE(cfg.xOnxOff() == SP_XONXOFF_INOUT);
     }
 }
