@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
+#include <config-sp.h>
 #include "libserialport.h"
 #include "libserialport_internal.h"
 
