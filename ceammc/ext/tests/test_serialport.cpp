@@ -206,5 +206,34 @@ TEST_CASE("serialport", "[serialport]")
 
         cfg.setXOnxOff(SP_XONXOFF_INOUT);
         REQUIRE(cfg.xOnxOff() == SP_XONXOFF_INOUT);
+
+        SECTION("copy")
+        {
+            SerialPortConfig cfg2(cfg);
+            REQUIRE(cfg2.baudRate() == 1024);
+            REQUIRE(cfg2.bits() == 8);
+            REQUIRE(cfg2.stopBits() == 2048);
+            REQUIRE(cfg2.parity() == SP_PARITY_EVEN);
+            REQUIRE(cfg2.cts() == SP_CTS_FLOW_CONTROL);
+            REQUIRE(cfg2.dsr() == SP_DSR_FLOW_CONTROL);
+            REQUIRE(cfg2.dtr() == SP_DTR_FLOW_CONTROL);
+            REQUIRE(cfg2.rts() == SP_RTS_ON);
+            REQUIRE(cfg2.xOnxOff() == SP_XONXOFF_INOUT);
+        }
+
+        SECTION("operator=")
+        {
+            SerialPortConfig cfg2;
+            cfg2 = cfg;
+            REQUIRE(cfg2.baudRate() == 1024);
+            REQUIRE(cfg2.bits() == 8);
+            REQUIRE(cfg2.stopBits() == 2048);
+            REQUIRE(cfg2.parity() == SP_PARITY_EVEN);
+            REQUIRE(cfg2.cts() == SP_CTS_FLOW_CONTROL);
+            REQUIRE(cfg2.dsr() == SP_DSR_FLOW_CONTROL);
+            REQUIRE(cfg2.dtr() == SP_DTR_FLOW_CONTROL);
+            REQUIRE(cfg2.rts() == SP_RTS_ON);
+            REQUIRE(cfg2.xOnxOff() == SP_XONXOFF_INOUT);
+        }
     }
 }
