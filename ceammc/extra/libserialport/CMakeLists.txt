@@ -1,16 +1,3 @@
-set(SP_LIB_VERSION_MAJOR 0)
-set(SP_LIB_VERSION_MINOR 1)
-set(SP_LIB_VERSION_MICRO 1)
-set(SP_LIB_VERSION_CURRENT 1)
-set(SP_LIB_VERSION_REVISION 0)
-set(SP_LIB_VERSION_AGE 1)
-set(SP_LIB_VERSION "${SP_LIB_VERSION_CURRENT}:${SP_LIB_VERSION_REVISION}:${SP_LIB_VERSION_AGE}")
-
-set(SP_PACKAGE_VERSION_MAJOR ${SP_LIB_VERSION_MAJOR})
-set(SP_PACKAGE_VERSION_MINOR ${SP_LIB_VERSION_MINOR})
-set(SP_PACKAGE_VERSION_MICRO ${SP_LIB_VERSION_MICRO})
-set(SP_PACKAGE_VERSION "${SP_PACKAGE_VERSION_MAJOR}.${SP_PACKAGE_VERSION_MINOR}.${SP_PACKAGE_VERSION_MICRO}")
-
 # system checks
 include(CheckIncludeFile)
 include(CheckTypeSize)
@@ -45,12 +32,11 @@ set(SP_API "")
 set(SP_PRIV "")
 
 # generating config
-configure_file(libserialport.h.in "${CMAKE_CURRENT_BINARY_DIR}/libserialport.h")
 configure_file(config.h.in "${CMAKE_CURRENT_BINARY_DIR}/config-sp.h")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # adding sources
-set(LIBSERIALPORT_SOURCES libserialport_internal.h serialport.c)
+set(LIBSERIALPORT_SOURCES libserialport_internal.h libserialport.h serialport.c)
 if(APPLE)
     list(APPEND LIBSERIALPORT_SOURCES macosx.c)
     check_include_file(IOKit/IOKitLib.h _IOKIT_INCLUDE)
@@ -65,11 +51,11 @@ add_library(libserialport STATIC ${LIBSERIALPORT_SOURCES})
 add_custom_target(libserialport_config SOURCES config.h.in libserialport.h.in)
 
 # linking
-if(UNIX)
-    set_target_properties(libserialport PROPERTIES COMPILE_FLAGS "-fPIC")
+if(APPLE)
+    target_link_libraries(libserialport "-framework IOKit -framework CoreFoundation")
 elseif(WIN32 OR MINGW OR MSYS)
     target_link_libraries(libserialport setupapi)
 else()
-
+    set_target_properties(libserialport PROPERTIES COMPILE_FLAGS "-fPIC")
 endif()
 
