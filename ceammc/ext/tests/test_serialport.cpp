@@ -148,6 +148,10 @@ TEST_CASE("serialport", "[serialport]")
 
             REQUIRE(s.isOpened());
 
+            SerialPortConfig cfg = s.config();
+            REQUIRE(cfg.baudRate() != -1);
+            REQUIRE(cfg.bits() != -1);
+
             if (s.open(MAC_MODEM, SerialPort::WRITE)) {
                 REQUIRE(s.isOpened());
                 REQUIRE(s.close());
@@ -158,5 +162,17 @@ TEST_CASE("serialport", "[serialport]")
         } else {
             REQUIRE_EMPTY_SERIAL(s);
         }
+    }
+
+    SECTION("SerialPortConfig")
+    {
+        SerialPortConfig cfg;
+        REQUIRE(cfg.baudRate() == -1);
+        REQUIRE(cfg.bits() == -1);
+        cfg.setBaudRate(8192);
+
+        SerialPortConfig cfg2(cfg);
+        REQUIRE(cfg2.baudRate() == 8192);
+        REQUIRE(cfg2.bits() == -1);
     }
 }

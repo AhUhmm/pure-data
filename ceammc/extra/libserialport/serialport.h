@@ -3,7 +3,47 @@
 
 #include <string>
 
-struct sp_port;
+#include "libserialport.h"
+
+class SerialPort;
+
+class SerialPortConfig {
+public:
+    SerialPortConfig();
+    ~SerialPortConfig();
+
+    SerialPortConfig(const SerialPortConfig&);
+    void operator=(const SerialPortConfig&);
+
+    int baudRate() const;
+    int bits() const;
+    int stopBits() const;
+    sp_parity parity() const;
+    sp_rts rts() const;
+    sp_cts cts() const;
+    sp_dtr dtr() const;
+    sp_dsr dsr() const;
+    sp_xonxoff xOnxOff() const;
+
+    void setBaudRate(int r);
+    void setBits(int b);
+    void setStopBits(int b);
+    void setParity(sp_parity p);
+    void setRts(sp_rts r);
+    void setCts(sp_cts c);
+    void setDtr(sp_dtr d);
+    void setDsr(sp_dsr d);
+    void setXOnxOff(sp_xonxoff x);
+
+    friend class SerialPort;
+
+private:
+    SerialPortConfig(sp_port* port);
+    static void copyFrom(const sp_port_config* str, sp_port_config* dest);
+
+private:
+    sp_port_config* config_;
+};
 
 class SerialPort {
 public:
@@ -44,6 +84,10 @@ public:
     bool isNative() const;
     bool isUSB() const;
     bool isBluetooth() const;
+
+    // setup
+    void setConfig(const SerialPortConfig& cfg);
+    SerialPortConfig config() const;
 
 public:
     static std::string lastErrorMessage();
