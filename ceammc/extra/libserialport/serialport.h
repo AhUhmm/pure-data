@@ -1,11 +1,15 @@
 #ifndef SERIALPORT_H
 #define SERIALPORT_H
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 #include "libserialport.h"
 
 class SerialPort;
+class SerialPortInfo;
+typedef std::vector<SerialPortInfo> DeviceInfoList;
 
 class SerialPortConfig {
 public:
@@ -45,6 +49,38 @@ private:
     sp_port_config* config_;
 };
 
+class SerialPortInfo {
+public:
+    SerialPortInfo(sp_port* p);
+
+    const std::string& name() const;
+    const std::string& description() const;
+
+    // usb
+    const std::string& usbSerial() const;
+    const std::string& usbManufacturer() const;
+    int usbVendorId() const;
+    int usbProductId() const;
+    int usbBus() const;
+    int usbAddr() const;
+
+    // types
+    bool isNative() const;
+    bool isUSB() const;
+    bool isBluetooth() const;
+
+private:
+    std::string name_;
+    std::string description_;
+    std::string usb_serial_;
+    std::string usb_manufacturer_;
+    int vid_;
+    int pid_;
+    int usb_bus_;
+    int usb_addr_;
+    sp_transport transport_;
+};
+
 class SerialPort {
 public:
     enum Mode {
@@ -63,27 +99,20 @@ public:
     SerialPort(const char* name, Mode mode);
     ~SerialPort();
 
-    Mode mode() const;
-
-    const std::string& name() const;
-    std::string description() const;
-
-    // usb
-    std::string usbManufacturer() const;
-    int usbVendorId() const;
-    int usbProductId() const;
-    int usbBus() const;
-    int usbAddr() const;
-    const std::string& usbSerial() const;
-
     bool open(const char* name, Mode mode);
     bool close();
-
     bool isOpened() const;
-    // types
-    bool isNative() const;
-    bool isUSB() const;
-    bool isBluetooth() const;
+
+    sp_return write(const std::string& data);
+    sp_return write(const std::vector<char>& data);
+    sp_return read(std::vector<char>& data);
+    bool drain();
+
+    std::string name() const;
+    Mode mode() const;
+
+    // info
+    SerialPortInfo info() const;
 
     // setup
     void setConfig(const SerialPortConfig& cfg);
@@ -93,18 +122,23 @@ public:
     static std::string lastErrorMessage();
     static int lastErrorCode();
 
-private:
-    void reset();
+    static DeviceInfoList listDevices();
+
+    template <class Pred>
+    static DeviceInfoList findByPred(Pred p);
 
 private:
     sp_port* port_;
-    std::string name_;
-    std::string usb_serial_;
-    int vid_;
-    int pid_;
-    int usb_bus_;
-    int usb_addr_;
     Mode mode_;
 };
+
+template <class Pred>
+DeviceInfoList SerialPort::findByPred(Pred p)
+{
+    DeviceInfoList out;
+    DeviceInfoList all = listDevices();
+    std::copy_if(all.begin(), all.end(), std::back_inserter(out), p);
+    return out;
+}
 
 #endif // SERIALPORT_H

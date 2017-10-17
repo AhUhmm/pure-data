@@ -172,22 +172,12 @@ void SerialPortConfig::copyFrom(const sp_port_config* src, sp_port_config* dest)
 
 SerialPort::SerialPort()
     : port_(0)
-    , vid_(0)
-    , pid_(0)
-    , usb_bus_(0)
-    , usb_addr_(0)
     , mode_(NONE)
 {
 }
 
 SerialPort::SerialPort(const char* name, Mode mode)
     : port_(0)
-    , name_(name)
-    , vid_(0)
-    , pid_(0)
-    , usb_bus_(0)
-    , usb_addr_(0)
-    , usb_serial_(0)
     , mode_(mode)
 {
     open(name, mode);
@@ -203,53 +193,99 @@ SerialPort::Mode SerialPort::mode() const
     return mode_;
 }
 
-const std::string& SerialPort::name() const
+SerialPortInfo SerialPort::info() const
+{
+    return SerialPortInfo(port_);
+}
+
+std::string SerialPort::name() const
+{
+    return port_ ? sp_get_port_name(port_) : "";
+}
+
+SerialPortInfo::SerialPortInfo(sp_port* p)
+    : vid_(-1)
+    , pid_(-1)
+    , usb_bus_(-1)
+    , usb_addr_(-1)
+    , transport_(SP_TRANSPORT_NATIVE)
+{
+    if (!p)
+        return;
+
+    char* name = sp_get_port_name(p);
+    name_ = (name) ? name : "";
+
+    char* descr = sp_get_port_description(p);
+    description_ = (descr) ? descr : "";
+
+    char* mnf = sp_get_port_usb_manufacturer(p);
+    usb_manufacturer_ = (mnf) ? mnf : "";
+
+    // get USB vendor and product
+    sp_get_port_usb_vid_pid(p, &vid_, &pid_);
+    // get USB address
+    sp_get_port_usb_bus_address(p, &usb_bus_, &usb_addr_);
+    // get USB serial
+    char* serial = sp_get_port_usb_serial(p);
+    usb_serial_ = (serial) ? serial : "";
+
+    transport_ = sp_get_port_transport(p);
+}
+
+const std::string& SerialPortInfo::name() const
 {
     return name_;
 }
 
-std::string SerialPort::description() const
+const std::string& SerialPortInfo::description() const
 {
-    if (!port_)
-        return "";
-
-    char* descr = sp_get_port_description(port_);
-    return descr ? descr : "";
+    return description_;
 }
 
-std::string SerialPort::usbManufacturer() const
+const std::string& SerialPortInfo::usbSerial() const
 {
-    if (!port_)
-        return "";
-
-    char* mnf = sp_get_port_usb_manufacturer(port_);
-
-    return mnf ? mnf : "";
+    return usb_serial_;
 }
 
-int SerialPort::usbVendorId() const
+const std::string& SerialPortInfo::usbManufacturer() const
+{
+    return usb_manufacturer_;
+}
+
+int SerialPortInfo::usbVendorId() const
 {
     return vid_;
 }
 
-int SerialPort::usbProductId() const
+int SerialPortInfo::usbProductId() const
 {
     return pid_;
 }
 
-int SerialPort::usbBus() const
+int SerialPortInfo::usbBus() const
 {
     return usb_bus_;
 }
 
-int SerialPort::usbAddr() const
+int SerialPortInfo::usbAddr() const
 {
     return usb_addr_;
 }
 
-const std::string& SerialPort::usbSerial() const
+bool SerialPortInfo::isNative() const
 {
-    return usb_serial_;
+    return transport_ == SP_TRANSPORT_NATIVE;
+}
+
+bool SerialPortInfo::isUSB() const
+{
+    return transport_ == SP_TRANSPORT_USB;
+}
+
+bool SerialPortInfo::isBluetooth() const
+{
+    return transport_ == SP_TRANSPORT_BLUETOOTH;
 }
 
 static sp_mode ceammc2sp(SerialPort::Mode mode)
@@ -263,22 +299,12 @@ bool SerialPort::open(const char* name, Mode mode)
     if (port_)
         close();
 
-    name_ = name;
     mode_ = mode;
 
-    if (sp_get_port_by_name(name_.c_str(), &port_) != SP_OK) {
-        reset();
+    if (sp_get_port_by_name(name, &port_) != SP_OK) {
+        mode_ = NONE;
         return false;
     }
-
-    // get USB vendor and product
-    sp_get_port_usb_vid_pid(port_, &vid_, &pid_);
-    // get USB address
-    sp_get_port_usb_bus_address(port_, &usb_bus_, &usb_addr_);
-    // get USB serial
-    char* serial = sp_get_port_usb_serial(port_);
-    if (serial)
-        usb_serial_ = serial;
 
     // try to open
     if (sp_open(port_, ceammc2sp(mode_)) != SP_OK) {
@@ -292,33 +318,19 @@ bool SerialPort::open(const char* name, Mode mode)
 bool SerialPort::close()
 {
     if (!port_) {
-        reset();
+        mode_ = NONE;
         return false;
     }
 
     if (sp_close(port_) != SP_OK) {
-        reset();
+        port_ = 0;
         return false;
     }
 
     sp_free_port(port_);
-    reset();
+    port_ = 0;
+    mode_ = NONE;
     return true;
-}
-
-bool SerialPort::isNative() const
-{
-    return !port_ ? false : sp_get_port_transport(port_) == SP_TRANSPORT_NATIVE;
-}
-
-bool SerialPort::isUSB() const
-{
-    return !port_ ? false : sp_get_port_transport(port_) == SP_TRANSPORT_USB;
-}
-
-bool SerialPort::isBluetooth() const
-{
-    return !port_ ? false : sp_get_port_transport(port_) == SP_TRANSPORT_BLUETOOTH;
 }
 
 void SerialPort::setConfig(const SerialPortConfig& cfg)
@@ -345,19 +357,54 @@ int SerialPort::lastErrorCode()
     return sp_last_error_code();
 }
 
-void SerialPort::reset()
+DeviceInfoList SerialPort::listDevices()
 {
-    port_ = 0;
-    name_ = "";
-    vid_ = 0;
-    pid_ = 0;
-    usb_bus_ = 0;
-    usb_addr_ = 0;
-    usb_serial_ = "";
-    mode_ = NONE;
+    DeviceInfoList res;
+
+    sp_port** ports = 0;
+    if (sp_list_ports(&ports) == SP_OK) {
+        for (sp_port** pp = ports; pp && *pp; ++pp)
+            res.push_back(SerialPortInfo(*pp));
+
+        sp_free_port_list(ports);
+    }
+
+    return res;
 }
 
 bool SerialPort::isOpened() const
 {
     return port_ != 0;
+}
+
+sp_return SerialPort::write(const std::string& data)
+{
+    if (!port_)
+        return SP_ERR_ARG;
+
+    return sp_blocking_write(port_, data.data(), data.size(), 5);
+}
+
+sp_return SerialPort::write(const std::vector<char>& data)
+{
+    if (!port_)
+        return SP_ERR_ARG;
+
+    return sp_blocking_write(port_, data.data(), data.size(), 55);
+}
+
+sp_return SerialPort::read(std::vector<char>& data)
+{
+    if (!port_)
+        return SP_ERR_ARG;
+
+    return sp_blocking_read(port_, data.data(), data.size(), 0);
+}
+
+bool SerialPort::drain()
+{
+    if (!port_)
+        return false;
+
+    return sp_drain(port_) == SP_OK;
 }

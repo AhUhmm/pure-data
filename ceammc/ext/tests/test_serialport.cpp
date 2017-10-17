@@ -8,19 +8,42 @@
 #define REQUIRE_EMPTY_SERIAL(s)                \
     {                                          \
         REQUIRE_FALSE(s.isOpened());           \
-        REQUIRE_FALSE(s.isBluetooth());        \
-        REQUIRE_FALSE(s.isNative());           \
-        REQUIRE_FALSE(s.isUSB());              \
         REQUIRE(s.mode() == SerialPort::NONE); \
         REQUIRE(s.name() == "");               \
-        REQUIRE(s.description() == "");        \
-        REQUIRE(s.usbBus() == 0);              \
-        REQUIRE(s.usbAddr() == 0);             \
-        REQUIRE(s.usbManufacturer() == "");    \
-        REQUIRE(s.usbVendorId() == 0);         \
-        REQUIRE(s.usbProductId() == 0);        \
-        REQUIRE(s.usbSerial() == "");          \
+        SerialPortInfo si = s.info();          \
+        REQUIRE(si.isNative());                \
+        REQUIRE_FALSE(si.isBluetooth());       \
+        REQUIRE_FALSE(si.isUSB());             \
+        REQUIRE(si.name() == "");              \
+        REQUIRE(si.description() == "");       \
+        REQUIRE(si.usbBus() == -1);            \
+        REQUIRE(si.usbAddr() == -1);           \
+        REQUIRE(si.usbManufacturer() == "");   \
+        REQUIRE(si.usbVendorId() == -1);       \
+        REQUIRE(si.usbProductId() == -1);      \
+        REQUIRE(si.usbSerial() == "");         \
     }
+
+bool findArduino(const SerialPortInfo& i)
+{
+    if (i.usbManufacturer().size() < 7)
+        return false;
+
+    if (i.usbManufacturer().substr(0, 7) == "Arduino")
+        return true;
+
+    return false;
+}
+
+bool findUSB(const SerialPortInfo& i)
+{
+    return i.isUSB();
+}
+
+bool findAll(const SerialPortInfo& i)
+{
+    return true;
+}
 
 TEST_CASE("serialport", "[serialport]")
 {
@@ -90,18 +113,31 @@ TEST_CASE("serialport", "[serialport]")
             return;
         }
 
-        char* name = sp_get_port_name(ports[0]);
+        char* name = sp_get_port_name(ports[2]);
         std::cerr << "\n~~~~~~~\ntrying to open: " << name << "\n";
 
         sp_port* dev = 0;
         if (sp_get_port_by_name(name, &dev) == SP_OK) {
             std::cerr << "\tok\n";
+            unsigned char buf[100];
 
             REQUIRE(sp_open(dev, SP_MODE_READ_WRITE) == SP_OK);
 
-            //            REQUIRE(sp_blocking_write(dev, buf, 3, 10));
-            REQUIRE(sp_close(dev) == SP_OK);
+            REQUIRE(sp_set_baudrate(dev, 57600) == SP_OK);
+            REQUIRE(sp_set_stopbits(dev, 1) == SP_OK);
+            REQUIRE(sp_set_bits(dev, 8) == SP_OK);
+            REQUIRE(sp_set_parity(dev, SP_PARITY_NONE) == SP_OK);
 
+            sleep(2);
+
+            const char* str = "\xF9";
+            REQUIRE(sp_blocking_write(dev, str, strlen(str), 1) == strlen(str));
+            REQUIRE(sp_blocking_read(dev, buf, 3, 0) == 3);
+            REQUIRE(buf[0] == 0xF9);
+            REQUIRE(buf[1] == 2);
+            REQUIRE(buf[2] == 5);
+
+            REQUIRE(sp_close(dev) == SP_OK);
             sp_free_port(dev);
         } else {
             std::cerr << "can't open: " << name << "\n";
@@ -112,6 +148,7 @@ TEST_CASE("serialport", "[serialport]")
 
     SECTION("serial")
     {
+        return;
         SerialPort s;
         REQUIRE_FALSE(s.isOpened());
         REQUIRE_EMPTY_SERIAL(s);
@@ -133,18 +170,18 @@ TEST_CASE("serialport", "[serialport]")
         const char* MAC_MODEM = "/dev/cu.Bluetooth-Incoming-Port";
         if (s.open(MAC_MODEM, SerialPort::READ)) {
             REQUIRE(s.isOpened());
-            REQUIRE(s.description() != "1");
-            REQUIRE(s.name() != "");
-            REQUIRE(s.isNative());
-            REQUIRE(!s.isUSB());
-            REQUIRE(!s.isBluetooth());
             REQUIRE(s.mode() == SerialPort::READ);
-            REQUIRE(s.usbAddr() == 0);
-            REQUIRE(s.usbBus() == 0);
-            REQUIRE(s.usbManufacturer() == "");
-            REQUIRE(s.usbSerial() == "");
-            REQUIRE(s.usbVendorId() == 0);
-            REQUIRE(s.usbProductId() == 0);
+            REQUIRE(s.info().description() != "1");
+            REQUIRE(s.info().name() != "");
+            REQUIRE(s.info().isNative());
+            REQUIRE(!s.info().isUSB());
+            REQUIRE(!s.info().isBluetooth());
+            REQUIRE(s.info().usbAddr() == -1);
+            REQUIRE(s.info().usbBus() == -1);
+            REQUIRE(s.info().usbManufacturer() == "");
+            REQUIRE(s.info().usbSerial() == "");
+            REQUIRE(s.info().usbVendorId() == -1);
+            REQUIRE(s.info().usbProductId() == -1);
 
             REQUIRE(s.isOpened());
 
@@ -246,6 +283,59 @@ TEST_CASE("serialport", "[serialport]")
             REQUIRE(cfg2.dtr() == SP_DTR_FLOW_CONTROL);
             REQUIRE(cfg2.rts() == SP_RTS_ON);
             REQUIRE(cfg2.xOnxOff() == SP_XONXOFF_INOUT);
+        }
+    }
+
+    SECTION("list devices")
+    {
+        DeviceInfoList lst = SerialPort::listDevices();
+
+        for (size_t i = 0; i < lst.size(); i++) {
+            const SerialPortInfo& n = lst[i];
+            SerialPort p(n.name().c_str(), SerialPort::READ);
+        }
+
+        lst = SerialPort::findByPred(findArduino);
+        if (!lst.empty()) {
+            std::cerr << "Arduino found: " << lst[0].name() << "\n";
+        }
+
+        lst = SerialPort::findByPred(findUSB);
+        if (!lst.empty()) {
+            std::cerr << "USB serial found: " << lst[0].name() << "\n";
+        }
+    }
+
+    SECTION("wine")
+    {
+#ifdef _WIN32
+        SerialPort p("COM1", SerialPort::READ);
+        REQUIRE(p.isOpened());
+#endif
+    }
+
+    SECTION("simple FIRMATA")
+    {
+        DeviceInfoList lst = SerialPort::findByPred(findArduino);
+        if (!lst.empty()) {
+            SerialPort p(lst[0].name().c_str(), SerialPort::WRITE);
+
+            SerialPortConfig c = p.config();
+            c.setBaudRate(57600);
+            p.setConfig(c);
+
+            sleep(3);
+
+            REQUIRE(p.write("\xF9") == 1);
+            //            REQUIRE(p.drain());
+
+            std::vector<char> data(3, 0);
+            if (p.read(data) != 3) {
+                std::cerr << SerialPort::lastErrorMessage() << "\n";
+            } else {
+                REQUIRE(data[1] == 2);
+                REQUIRE(data[2] == 5);
+            }
         }
     }
 }
