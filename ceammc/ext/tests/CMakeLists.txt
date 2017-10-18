@@ -192,8 +192,9 @@ if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 ceammc_add_test_linked(
-    TITLE "libserialport"
+    TITLE "Serial"
     NAME test_serialport
-    LINK libserialport)
+    INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/ceammc/extra/serial/serial/include
+    LINK serial)
 
 add_custom_target(test_src SOURCES gen_test_wav.py)
