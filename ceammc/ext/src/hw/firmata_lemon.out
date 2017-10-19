@@ -1,0 +1,359 @@
+State 0:
+          program ::= * message
+          message ::= * ANALOG_IO pin value14
+          message ::= * DIGITAL_IO pin value14
+          message ::= * REPORT_ANALOG pin switch
+          message ::= * REPORT_DIGITAL pin switch
+          message ::= * SET_PIN_MODE pin pin_mode
+          message ::= * SET_DPIN_VALUE pin switch
+          message ::= * PROTOCOL_VERSION protocol_version
+          message ::= * sysex
+          message ::= * SYSEM_RESET
+          sysex ::= * START_SYSEX sysex_body STOP_SYSEX
+
+                     ANALOG_IO shift  13
+                    DIGITAL_IO shift  15
+                 REPORT_ANALOG shift  11
+                REPORT_DIGITAL shift  8
+                  SET_PIN_MODE shift  9
+                SET_DPIN_VALUE shift  10
+              PROTOCOL_VERSION shift  3
+                   SYSEM_RESET shift  27
+                   START_SYSEX shift  16
+                       program accept
+                       message shift  17
+                         sysex shift  26
+
+State 1:
+          message ::= ANALOG_IO pin * value14
+          value14 ::= * byte7 byte7
+          byte7 ::= * BYTE7
+
+                         BYTE7 shift  32
+                       value14 shift  30
+                         byte7 shift  14
+
+State 2:
+          message ::= DIGITAL_IO pin * value14
+          value14 ::= * byte7 byte7
+          byte7 ::= * BYTE7
+
+                         BYTE7 shift  32
+                       value14 shift  34
+                         byte7 shift  14
+
+State 3:
+          message ::= PROTOCOL_VERSION * protocol_version
+          byte7 ::= * BYTE7
+          protocol_version ::= * byte7 byte7
+
+                         BYTE7 shift  32
+              protocol_version shift  24
+                         byte7 shift  12
+
+State 4:
+          message ::= SET_PIN_MODE pin * pin_mode
+          pin_mode ::= * INPUT
+          pin_mode ::= * OUTPUT
+          pin_mode ::= * ANALOG
+          pin_mode ::= * PWM
+          pin_mode ::= * SERVO
+          pin_mode ::= * I2C
+          pin_mode ::= * ONEWIRE
+          pin_mode ::= * STEPPER
+          pin_mode ::= * ENCODER
+          pin_mode ::= * SERIAL
+          pin_mode ::= * PULLUP
+
+                         INPUT shift  40
+                        OUTPUT shift  41
+                        ANALOG shift  42
+                           PWM shift  43
+                         SERVO shift  44
+                           I2C shift  45
+                       ONEWIRE shift  46
+                       STEPPER shift  19
+                       ENCODER shift  20
+                        SERIAL shift  21
+                        PULLUP shift  22
+                      pin_mode shift  39
+
+State 5:
+          message ::= REPORT_DIGITAL pin * switch
+          switch ::= * ON
+          switch ::= * OFF
+
+                            ON shift  36
+                           OFF shift  37
+                        switch shift  38
+
+State 6:
+          message ::= SET_DPIN_VALUE pin * switch
+          switch ::= * ON
+          switch ::= * OFF
+
+                            ON shift  36
+                           OFF shift  37
+                        switch shift  23
+
+State 7:
+          message ::= REPORT_ANALOG pin * switch
+          switch ::= * ON
+          switch ::= * OFF
+
+                            ON shift  36
+                           OFF shift  37
+                        switch shift  35
+
+State 8:
+          message ::= REPORT_DIGITAL * pin switch
+          pin ::= * BYTE7
+
+                         BYTE7 shift  33
+                           pin shift  5
+
+State 9:
+          message ::= SET_PIN_MODE * pin pin_mode
+          pin ::= * BYTE7
+
+                         BYTE7 shift  33
+                           pin shift  4
+
+State 10:
+          message ::= SET_DPIN_VALUE * pin switch
+          pin ::= * BYTE7
+
+                         BYTE7 shift  33
+                           pin shift  6
+
+State 11:
+          message ::= REPORT_ANALOG * pin switch
+          pin ::= * BYTE7
+
+                         BYTE7 shift  33
+                           pin shift  7
+
+State 12:
+          byte7 ::= * BYTE7
+          protocol_version ::= byte7 * byte7
+
+                         BYTE7 shift  32
+                         byte7 shift  25
+
+State 13:
+          message ::= ANALOG_IO * pin value14
+          pin ::= * BYTE7
+
+                         BYTE7 shift  33
+                           pin shift  1
+
+State 14:
+          value14 ::= byte7 * byte7
+          byte7 ::= * BYTE7
+
+                         BYTE7 shift  32
+                         byte7 shift  31
+
+State 15:
+          message ::= DIGITAL_IO * pin value14
+          pin ::= * BYTE7
+
+                         BYTE7 shift  33
+                           pin shift  2
+
+State 16:
+          sysex ::= START_SYSEX * sysex_body STOP_SYSEX
+          sysex_body ::= * SYSEX_ID
+
+                      SYSEX_ID shift  29
+                    sysex_body shift  18
+
+State 17:
+      (0) program ::= message *
+
+                             $ reduce 0
+
+State 18:
+          sysex ::= START_SYSEX sysex_body * STOP_SYSEX
+
+                    STOP_SYSEX shift  28
+
+State 19:
+     (22) pin_mode ::= STEPPER *
+
+                     {default} reduce 22
+
+State 20:
+     (23) pin_mode ::= ENCODER *
+
+                     {default} reduce 23
+
+State 21:
+     (24) pin_mode ::= SERIAL *
+
+                     {default} reduce 24
+
+State 22:
+     (25) pin_mode ::= PULLUP *
+
+                     {default} reduce 25
+
+State 23:
+      (6) message ::= SET_DPIN_VALUE pin switch *
+
+                     {default} reduce 6
+
+State 24:
+      (7) message ::= PROTOCOL_VERSION protocol_version *
+
+                     {default} reduce 7
+
+State 25:
+     (26) protocol_version ::= byte7 byte7 *
+
+                     {default} reduce 26
+
+State 26:
+      (8) message ::= sysex *
+
+                     {default} reduce 8
+
+State 27:
+      (9) message ::= SYSEM_RESET *
+
+                     {default} reduce 9
+
+State 28:
+     (27) sysex ::= START_SYSEX sysex_body STOP_SYSEX *
+
+                     {default} reduce 27
+
+State 29:
+     (28) sysex_body ::= SYSEX_ID *
+
+                     {default} reduce 28
+
+State 30:
+      (1) message ::= ANALOG_IO pin value14 *
+
+                     {default} reduce 1
+
+State 31:
+     (10) value14 ::= byte7 byte7 *
+
+                     {default} reduce 10
+
+State 32:
+     (14) byte7 ::= BYTE7 *
+
+                     {default} reduce 14
+
+State 33:
+     (11) pin ::= BYTE7 *
+
+                     {default} reduce 11
+
+State 34:
+      (2) message ::= DIGITAL_IO pin value14 *
+
+                     {default} reduce 2
+
+State 35:
+      (3) message ::= REPORT_ANALOG pin switch *
+
+                     {default} reduce 3
+
+State 36:
+     (12) switch ::= ON *
+
+                     {default} reduce 12
+
+State 37:
+     (13) switch ::= OFF *
+
+                     {default} reduce 13
+
+State 38:
+      (4) message ::= REPORT_DIGITAL pin switch *
+
+                     {default} reduce 4
+
+State 39:
+      (5) message ::= SET_PIN_MODE pin pin_mode *
+
+                     {default} reduce 5
+
+State 40:
+     (15) pin_mode ::= INPUT *
+
+                     {default} reduce 15
+
+State 41:
+     (16) pin_mode ::= OUTPUT *
+
+                     {default} reduce 16
+
+State 42:
+     (17) pin_mode ::= ANALOG *
+
+                     {default} reduce 17
+
+State 43:
+     (18) pin_mode ::= PWM *
+
+                     {default} reduce 18
+
+State 44:
+     (19) pin_mode ::= SERVO *
+
+                     {default} reduce 19
+
+State 45:
+     (20) pin_mode ::= I2C *
+
+                     {default} reduce 20
+
+State 46:
+     (21) pin_mode ::= ONEWIRE *
+
+                     {default} reduce 21
+
+----------------------------------------------------
+Symbols:
+    0: $:
+    1: ANALOG_IO
+    2: DIGITAL_IO
+    3: REPORT_ANALOG
+    4: REPORT_DIGITAL
+    5: SET_PIN_MODE
+    6: SET_DPIN_VALUE
+    7: PROTOCOL_VERSION
+    8: SYSEM_RESET
+    9: BYTE7
+   10: ON
+   11: OFF
+   12: INPUT
+   13: OUTPUT
+   14: ANALOG
+   15: PWM
+   16: SERVO
+   17: I2C
+   18: ONEWIRE
+   19: STEPPER
+   20: ENCODER
+   21: SERIAL
+   22: PULLUP
+   23: START_SYSEX
+   24: STOP_SYSEX
+   25: SYSEX_ID
+   26: error:
+   27: program: ANALOG_IO DIGITAL_IO REPORT_ANALOG REPORT_DIGITAL SET_PIN_MODE SET_DPIN_VALUE PROTOCOL_VERSION SYSEM_RESET START_SYSEX
+   28: message: ANALOG_IO DIGITAL_IO REPORT_ANALOG REPORT_DIGITAL SET_PIN_MODE SET_DPIN_VALUE PROTOCOL_VERSION SYSEM_RESET START_SYSEX
+   29: pin: BYTE7
+   30: value14: BYTE7
+   31: switch: ON OFF
+   32: pin_mode: INPUT OUTPUT ANALOG PWM SERVO I2C ONEWIRE STEPPER ENCODER SERIAL PULLUP
+   33: protocol_version: BYTE7
+   34: sysex: START_SYSEX
+   35: byte7: BYTE7
+   36: sysex_body: SYSEX_ID

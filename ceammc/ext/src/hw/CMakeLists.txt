@@ -1,4 +1,4 @@
-set(HW_SOURCES "")
+set(HW_SOURCES firmata_server.cpp firmata_parser.cpp firmata_lemon.c firmata_lemon.h firmata_proto.h)
 macro(ceammc_hw_extension name)
     list(APPEND HW_SOURCES "hw_${name}.cpp")
 endmacro()
