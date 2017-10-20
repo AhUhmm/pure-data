@@ -197,4 +197,9 @@ ceammc_add_test_linked(
     INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/ceammc/extra/serial/serial/include
     LINK serial)
 
+ceammc_add_test_linked(
+    TITLE "firmata parser [lemon]"
+    NAME test_firmata_parser
+    LINK ceammc_hw)
+
 add_custom_target(test_src SOURCES gen_test_wav.py)

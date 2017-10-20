@@ -1,3 +1,12 @@
+#ifndef FIRMATA_PROTO_H
+#define FIRMATA_PROTO_H
+
+#include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum FirmataProtoCommand {
     PROTO_ANALOG_IO_MESSAGE = 0xE0,
     PROTO_DIGITAL_IO_MESSAGE = 0x90,
@@ -11,11 +20,33 @@ enum FirmataProtoCommand {
     PROTO_SYSTEM_RESET = 0xFF
 };
 
+typedef struct FirmataProtoVersion {
+    unsigned char major;
+    unsigned char minor;
+} FirmataProtoVersion;
+
 typedef struct FirmataMessage {
     enum FirmataProtoCommand command;
     int value;
     unsigned char pin;
     unsigned char byte;
-    unsigned char proto_maj;
-    unsigned char proto_min;
+    unsigned char done;
+    FirmataProtoVersion proto_version;
+
 } FirmataMessage;
+
+typedef int FirmataParseTOKENTYPE;
+typedef void (*FirmataParseFn)(void*, int, FirmataParseTOKENTYPE);
+
+FirmataMessage* message();
+void* FirmataParseAlloc(void* (*mallocProc)(size_t));
+void FirmataParseFree(void* p, void (*freeProc)(void*));
+void FirmataParse(void* yyp, int yymajor, /* The major token code number */
+    FirmataParseTOKENTYPE yyminor /* The value for the token */);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif // FIRMATA_PROTO_H

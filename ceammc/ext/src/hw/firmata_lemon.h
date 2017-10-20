@@ -5,7 +5,7 @@
 #define FIRMATA_SET_PIN_MODE                    5
 #define FIRMATA_SET_DPIN_VALUE                  6
 #define FIRMATA_PROTOCOL_VERSION                7
-#define FIRMATA_SYSEM_RESET                     8
+#define FIRMATA_SYSTEM_RESET                    8
 #define FIRMATA_BYTE7                           9
 #define FIRMATA_ON                             10
 #define FIRMATA_OFF                            11

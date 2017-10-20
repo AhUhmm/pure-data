@@ -13,9 +13,21 @@
 struct FirmataMessage message_;
 
 void output_message(FirmataMessage* msg) {
-
+    printf("message parsed: %d.%d\n", msg->proto_version.major, msg->proto_version.minor);
 }
-#line 19 "firmata_lemon.c"
+
+void output_analog_value(FirmataMessage* msg) {
+    printf("analog value: %d at pin #%d\n", msg->value, msg->pin);
+}
+
+void output_digital_value(FirmataMessage* msg) {
+    printf("digital value: %d at pin #%d\n", msg->value, msg->pin);
+}
+
+FirmataMessage* message() {
+    return &message_;
+}
+#line 31 "firmata_lemon.c"
 /* Next is all token values, in a form suitable for use by makeheaders.
 ** This section will be null unless lemon is run with the -m switch.
 */
@@ -48,18 +60,18 @@ void output_message(FirmataMessage* msg) {
 **                       and nonterminal numbers.  "unsigned char" is
 **                       used if there are fewer than 250 rules and
 **                       states combined.  "int" is used otherwise.
-**    ParseTOKENTYPE     is the data type used for minor tokens given 
+**    FirmataParseTOKENTYPE     is the data type used for minor tokens given 
 **                       directly to the parser from the tokenizer.
 **    YYMINORTYPE        is the data type used for all minor tokens.
 **                       This is typically a union of many types, one of
-**                       which is ParseTOKENTYPE.  The entry in the union
+**                       which is FirmataParseTOKENTYPE.  The entry in the union
 **                       for base tokens is called "yy0".
 **    YYSTACKDEPTH       is the maximum depth of the parser's stack.  If
 **                       zero the stack is dynamically sized using realloc()
-**    ParseARG_SDECL     A static variable declaration for the %extra_argument
-**    ParseARG_PDECL     A parameter declaration for the %extra_argument
-**    ParseARG_STORE     Code to store %extra_argument into yypParser
-**    ParseARG_FETCH     Code to extract %extra_argument from yypParser
+**    FirmataParseARG_SDECL     A static variable declaration for the %extra_argument
+**    FirmataParseARG_PDECL     A parameter declaration for the %extra_argument
+**    FirmataParseARG_STORE     Code to store %extra_argument into yypParser
+**    FirmataParseARG_FETCH     Code to extract %extra_argument from yypParser
 **    YYNSTATE           the combined number of states.
 **    YYNRULE            the number of rules in the grammar
 **    YYERRORSYMBOL      is the code number of the error symbol.  If not
@@ -68,18 +80,19 @@ void output_message(FirmataMessage* msg) {
 #define YYCODETYPE unsigned char
 #define YYNOCODE 38
 #define YYACTIONTYPE unsigned char
-#define ParseTOKENTYPE int
+#define FirmataParseTOKENTYPE int
 typedef union {
   int yyinit;
-  ParseTOKENTYPE yy0;
+  FirmataParseTOKENTYPE yy0;
+  FirmataProtoVersion yy5;
 } YYMINORTYPE;
 #ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
 #endif
-#define ParseARG_SDECL
-#define ParseARG_PDECL
-#define ParseARG_FETCH
-#define ParseARG_STORE
+#define FirmataParseARG_SDECL
+#define FirmataParseARG_PDECL
+#define FirmataParseARG_FETCH
+#define FirmataParseARG_STORE
 #define YYNSTATE 47
 #define YYNRULE 29
 #define YY_NO_ACTION      (YYNSTATE+YYNRULE+2)
@@ -153,30 +166,28 @@ static const YYMINORTYPE yyzerominor = { 0 };
 static const YYACTIONTYPE yy_action[] = {
  /*     0 */    40,   41,   42,   43,   44,   45,   46,   19,   20,   21,
  /*    10 */    22,   13,   15,   11,    8,    9,   10,    3,   27,   77,
- /*    20 */    17,   36,   37,   30,   34,   29,   26,   18,   14,   14,
- /*    30 */    24,   47,   12,   16,   32,    7,   28,   39,   38,   23,
- /*    40 */    35,   33,    5,    4,    6,   78,    1,   78,    2,   78,
- /*    50 */    78,   25,   78,   31,
+ /*    20 */    17,   36,   37,   14,   14,   26,   12,   24,   30,   34,
+ /*    30 */    29,   18,   47,   16,   32,    7,   28,   39,   33,   38,
+ /*    40 */    23,   35,   78,   25,    5,    4,    6,   31,    1,    2,
 };
 static const YYCODETYPE yy_lookahead[] = {
  /*     0 */    12,   13,   14,   15,   16,   17,   18,   19,   20,   21,
- /*    10 */    22,    1,    2,    3,    4,    5,    6,    7,    8,   27,
- /*    20 */    28,   10,   11,   30,   30,   25,   34,   36,   35,   35,
- /*    30 */    33,    0,   35,   23,    9,   29,   24,   32,   31,   31,
- /*    40 */    31,    9,   29,   29,   29,   37,   29,   37,   29,   37,
- /*    50 */    37,   35,   37,   35,
+ /*    10 */    22,    1,    2,    3,    4,    5,    6,    7,    8,   29,
+ /*    20 */    30,   10,   11,   27,   27,   35,   27,   28,   32,   32,
+ /*    30 */    25,   36,    0,   23,    9,   31,   24,   34,    9,   33,
+ /*    40 */    33,   33,   37,   27,   31,   31,   31,   27,   31,   31,
 };
 #define YY_SHIFT_USE_DFLT (-13)
 #define YY_SHIFT_MAX 18
 static const signed char yy_shift_ofst[] = {
- /*     0 */    10,   25,   25,   25,  -12,   11,   11,   11,   32,   32,
- /*    10 */    32,   32,   25,   32,   25,   32,    0,   31,   12,
+ /*     0 */    10,   25,   25,   25,  -12,   11,   11,   11,   29,   29,
+ /*    10 */    29,   29,   25,   29,   25,   29,    5,   32,   12,
 };
-#define YY_REDUCE_USE_DFLT (-10)
+#define YY_REDUCE_USE_DFLT (-11)
 #define YY_REDUCE_MAX 16
 static const signed char yy_reduce_ofst[] = {
- /*     0 */    -8,   -7,   -6,   -3,    5,    7,    8,    9,   13,   14,
- /*    10 */    15,    6,   16,   17,   18,   19,   -9,
+ /*     0 */   -10,   -4,   -3,   -1,    3,    6,    7,    8,   13,   14,
+ /*    10 */    15,    4,   16,   17,   20,   18,   -5,
 };
 static const YYACTIONTYPE yy_default[] = {
  /*     0 */    76,   76,   76,   76,   76,   76,   76,   76,   76,   76,
@@ -231,7 +242,7 @@ struct yyParser {
   int yyidxMax;                 /* Maximum value of yyidx */
 #endif
   int yyerrcnt;                 /* Shifts left before out of the error */
-  ParseARG_SDECL                /* A place to hold %extra_argument */
+  FirmataParseARG_SDECL                /* A place to hold %extra_argument */
 #if YYSTACKDEPTH<=0
   int yystksz;                  /* Current side of the stack */
   yyStackEntry *yystack;        /* The parser's stack */
@@ -265,7 +276,7 @@ static char *yyTracePrompt = 0;
 ** Outputs:
 ** None.
 */
-void ParseTrace(FILE *TraceFILE, char *zTracePrompt){
+void FirmataParseTrace(FILE *TraceFILE, char *zTracePrompt){
   yyTraceFILE = TraceFILE;
   yyTracePrompt = zTracePrompt;
   if( yyTraceFILE==0 ) yyTracePrompt = 0;
@@ -279,13 +290,13 @@ void ParseTrace(FILE *TraceFILE, char *zTracePrompt){
 static const char *const yyTokenName[] = { 
   "$",             "ANALOG_IO",     "DIGITAL_IO",    "REPORT_ANALOG",
   "REPORT_DIGITAL",  "SET_PIN_MODE",  "SET_DPIN_VALUE",  "PROTOCOL_VERSION",
-  "SYSEM_RESET",   "BYTE7",         "ON",            "OFF",         
+  "SYSTEM_RESET",  "BYTE7",         "ON",            "OFF",         
   "INPUT",         "OUTPUT",        "ANALOG",        "PWM",         
   "SERVO",         "I2C",           "ONEWIRE",       "STEPPER",     
   "ENCODER",       "SERIAL",        "PULLUP",        "START_SYSEX", 
-  "STOP_SYSEX",    "SYSEX_ID",      "error",         "program",     
-  "message",       "pin",           "value14",       "switch",      
-  "pin_mode",      "protocol_version",  "sysex",         "byte7",       
+  "STOP_SYSEX",    "SYSEX_ID",      "error",         "byte7",       
+  "protocol_version",  "program",       "message",       "pin",         
+  "value14",       "switch",        "pin_mode",      "sysex",       
   "sysex_body",  
 };
 #endif /* NDEBUG */
@@ -303,7 +314,7 @@ static const char *const yyRuleName[] = {
  /*   6 */ "message ::= SET_DPIN_VALUE pin switch",
  /*   7 */ "message ::= PROTOCOL_VERSION protocol_version",
  /*   8 */ "message ::= sysex",
- /*   9 */ "message ::= SYSEM_RESET",
+ /*   9 */ "message ::= SYSTEM_RESET",
  /*  10 */ "value14 ::= byte7 byte7",
  /*  11 */ "pin ::= BYTE7",
  /*  12 */ "switch ::= ON",
@@ -360,9 +371,9 @@ static void yyGrowStack(yyParser *p){
 **
 ** Outputs:
 ** A pointer to a parser.  This pointer is used in subsequent calls
-** to Parse and ParseFree.
+** to FirmataParse and FirmataParseFree.
 */
-void *ParseAlloc(void *(*mallocProc)(size_t)){
+void *FirmataParseAlloc(void *(*mallocProc)(size_t)){
   yyParser *pParser;
   pParser = (yyParser*)(*mallocProc)( (size_t)sizeof(yyParser) );
   if( pParser ){
@@ -389,7 +400,7 @@ static void yy_destructor(
   YYCODETYPE yymajor,     /* Type code for object to destroy */
   YYMINORTYPE *yypminor   /* The object to be destroyed */
 ){
-  ParseARG_FETCH;
+  FirmataParseARG_FETCH;
   switch( yymajor ){
     /* Here is inserted the actions which take place when a
     ** terminal or non-terminal is destroyed.  This can happen
@@ -438,12 +449,12 @@ static int yy_pop_parser_stack(yyParser *pParser){
 ** Inputs:
 ** <ul>
 ** <li>  A pointer to the parser.  This should be a pointer
-**       obtained from ParseAlloc.
+**       obtained from FirmataParseAlloc.
 ** <li>  A pointer to a function used to reclaim memory obtained
 **       from malloc.
 ** </ul>
 */
-void ParseFree(
+void FirmataParseFree(
   void *p,                    /* The parser to be deleted */
   void (*freeProc)(void*)     /* Function used to reclaim memory */
 ){
@@ -460,7 +471,7 @@ void ParseFree(
 ** Return the peak depth of the stack for a parser.
 */
 #ifdef YYTRACKMAXSTACKDEPTH
-int ParseStackPeak(void *p){
+int FirmataParseStackPeak(void *p){
   yyParser *pParser = (yyParser*)p;
   return pParser->yyidxMax;
 }
@@ -561,7 +572,7 @@ static int yy_find_reduce_action(
 ** The following routine is called if the stack overflows.
 */
 static void yyStackOverflow(yyParser *yypParser, YYMINORTYPE *yypMinor){
-   ParseARG_FETCH;
+   FirmataParseARG_FETCH;
    yypParser->yyidx--;
 #ifndef NDEBUG
    if( yyTraceFILE ){
@@ -571,7 +582,7 @@ static void yyStackOverflow(yyParser *yypParser, YYMINORTYPE *yypMinor){
    while( yypParser->yyidx>=0 ) yy_pop_parser_stack(yypParser);
    /* Here code is inserted which will execute if the parser
    ** stack every overflows */
-   ParseARG_STORE; /* Suppress warning about unused %extra_argument var */
+   FirmataParseARG_STORE; /* Suppress warning about unused %extra_argument var */
 }
 
 /*
@@ -627,34 +638,34 @@ static const struct {
   YYCODETYPE lhs;         /* Symbol on the left-hand side of the rule */
   unsigned char nrhs;     /* Number of right-hand side symbols in the rule */
 } yyRuleInfo[] = {
-  { 27, 1 },
-  { 28, 3 },
-  { 28, 3 },
-  { 28, 3 },
-  { 28, 3 },
-  { 28, 3 },
-  { 28, 3 },
-  { 28, 2 },
-  { 28, 1 },
-  { 28, 1 },
-  { 30, 2 },
   { 29, 1 },
+  { 30, 3 },
+  { 30, 3 },
+  { 30, 3 },
+  { 30, 3 },
+  { 30, 3 },
+  { 30, 3 },
+  { 30, 2 },
+  { 30, 1 },
+  { 30, 1 },
+  { 32, 2 },
   { 31, 1 },
-  { 31, 1 },
-  { 35, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 32, 1 },
-  { 33, 2 },
-  { 34, 3 },
+  { 33, 1 },
+  { 33, 1 },
+  { 27, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 34, 1 },
+  { 28, 2 },
+  { 35, 3 },
   { 36, 1 },
 };
 
@@ -673,7 +684,7 @@ static void yy_reduce(
   YYMINORTYPE yygotominor;        /* The LHS of the rule reduced */
   yyStackEntry *yymsp;            /* The top of the parser's stack */
   int yysize;                     /* Amount to pop the stack */
-  ParseARG_FETCH;
+  FirmataParseARG_FETCH;
   yymsp = &yypParser->yystack[yypParser->yyidx];
 #ifndef NDEBUG
   if( yyTraceFILE && yyruleno>=0 
@@ -711,93 +722,143 @@ static void yy_reduce(
   **     break;
   */
       case 0: /* program ::= message */
-#line 20 "firmata_lemon.y"
-{ output_message(&message_); }
-#line 717 "firmata_lemon.c"
+#line 40 "firmata_lemon.y"
+{ printf("Hi, there!!!\n"); }
+#line 728 "firmata_lemon.c"
         break;
       case 1: /* message ::= ANALOG_IO pin value14 */
-#line 23 "firmata_lemon.y"
+#line 43 "firmata_lemon.y"
 {
     message_.command = PROTO_ANALOG_IO_MESSAGE;
     message_.pin = yymsp[-1].minor.yy0;
     message_.value = yymsp[0].minor.yy0;
+    message_.done = 1;
+    output_analog_value(&message_);
 }
-#line 726 "firmata_lemon.c"
+#line 739 "firmata_lemon.c"
         break;
       case 2: /* message ::= DIGITAL_IO pin value14 */
-#line 29 "firmata_lemon.y"
+#line 51 "firmata_lemon.y"
 {
     message_.command = PROTO_DIGITAL_IO_MESSAGE;
     message_.pin = yymsp[-1].minor.yy0;
     message_.value = yymsp[0].minor.yy0;
+    message_.done = 1;
+    output_digital_value(&message_);
 }
-#line 735 "firmata_lemon.c"
+#line 750 "firmata_lemon.c"
         break;
       case 3: /* message ::= REPORT_ANALOG pin switch */
       case 4: /* message ::= REPORT_DIGITAL pin switch */ yytestcase(yyruleno==4);
       case 5: /* message ::= SET_PIN_MODE pin pin_mode */ yytestcase(yyruleno==5);
-      case 7: /* message ::= PROTOCOL_VERSION protocol_version */ yytestcase(yyruleno==7);
       case 8: /* message ::= sysex */ yytestcase(yyruleno==8);
-      case 9: /* message ::= SYSEM_RESET */ yytestcase(yyruleno==9);
-      case 15: /* pin_mode ::= INPUT */ yytestcase(yyruleno==15);
-      case 16: /* pin_mode ::= OUTPUT */ yytestcase(yyruleno==16);
-      case 17: /* pin_mode ::= ANALOG */ yytestcase(yyruleno==17);
-      case 18: /* pin_mode ::= PWM */ yytestcase(yyruleno==18);
-      case 19: /* pin_mode ::= SERVO */ yytestcase(yyruleno==19);
-      case 20: /* pin_mode ::= I2C */ yytestcase(yyruleno==20);
-      case 21: /* pin_mode ::= ONEWIRE */ yytestcase(yyruleno==21);
-      case 22: /* pin_mode ::= STEPPER */ yytestcase(yyruleno==22);
-      case 23: /* pin_mode ::= ENCODER */ yytestcase(yyruleno==23);
-      case 24: /* pin_mode ::= SERIAL */ yytestcase(yyruleno==24);
-      case 25: /* pin_mode ::= PULLUP */ yytestcase(yyruleno==25);
-#line 35 "firmata_lemon.y"
+      case 9: /* message ::= SYSTEM_RESET */ yytestcase(yyruleno==9);
+#line 59 "firmata_lemon.y"
 { ; }
-#line 756 "firmata_lemon.c"
+#line 759 "firmata_lemon.c"
         break;
       case 6: /* message ::= SET_DPIN_VALUE pin switch */
-#line 39 "firmata_lemon.y"
+#line 63 "firmata_lemon.y"
 {
     message_.command = PROTO_SET_DIGITAL_PIN_VALUE;
     message_.pin = yymsp[-1].minor.yy0;
     message_.value = yymsp[0].minor.yy0;
+    message_.done = 1;
 }
-#line 765 "firmata_lemon.c"
+#line 769 "firmata_lemon.c"
+        break;
+      case 7: /* message ::= PROTOCOL_VERSION protocol_version */
+#line 70 "firmata_lemon.y"
+{
+    message_.command = PROTO_PROTOCOL_VERSION;
+    message_.proto_version = yymsp[0].minor.yy5;
+    output_message(&message_);
+    message_.done = 1;
+}
+#line 779 "firmata_lemon.c"
         break;
       case 10: /* value14 ::= byte7 byte7 */
-#line 49 "firmata_lemon.y"
+#line 80 "firmata_lemon.y"
 { yygotominor.yy0 = (yymsp[-1].minor.yy0 | (yymsp[0].minor.yy0 << 7)); }
-#line 770 "firmata_lemon.c"
+#line 784 "firmata_lemon.c"
         break;
       case 11: /* pin ::= BYTE7 */
-#line 50 "firmata_lemon.y"
+#line 81 "firmata_lemon.y"
 { yygotominor.yy0 = (0xF & yymsp[0].minor.yy0); }
-#line 775 "firmata_lemon.c"
+#line 789 "firmata_lemon.c"
         break;
       case 12: /* switch ::= ON */
-#line 51 "firmata_lemon.y"
+      case 16: /* pin_mode ::= OUTPUT */ yytestcase(yyruleno==16);
+#line 82 "firmata_lemon.y"
 { yygotominor.yy0 = 1; }
-#line 780 "firmata_lemon.c"
+#line 795 "firmata_lemon.c"
         break;
       case 13: /* switch ::= OFF */
-#line 52 "firmata_lemon.y"
+      case 15: /* pin_mode ::= INPUT */ yytestcase(yyruleno==15);
+#line 83 "firmata_lemon.y"
 { yygotominor.yy0 = 0; }
-#line 785 "firmata_lemon.c"
+#line 801 "firmata_lemon.c"
         break;
       case 14: /* byte7 ::= BYTE7 */
-#line 53 "firmata_lemon.y"
+#line 84 "firmata_lemon.y"
 { yygotominor.yy0 = (0x7F & yymsp[0].minor.yy0); }
-#line 790 "firmata_lemon.c"
+#line 806 "firmata_lemon.c"
+        break;
+      case 17: /* pin_mode ::= ANALOG */
+#line 87 "firmata_lemon.y"
+{ yygotominor.yy0 = 2; }
+#line 811 "firmata_lemon.c"
+        break;
+      case 18: /* pin_mode ::= PWM */
+#line 88 "firmata_lemon.y"
+{ yygotominor.yy0 = 3; }
+#line 816 "firmata_lemon.c"
+        break;
+      case 19: /* pin_mode ::= SERVO */
+#line 89 "firmata_lemon.y"
+{ yygotominor.yy0 = 4; }
+#line 821 "firmata_lemon.c"
+        break;
+      case 20: /* pin_mode ::= I2C */
+#line 90 "firmata_lemon.y"
+{ yygotominor.yy0 = 6; }
+#line 826 "firmata_lemon.c"
+        break;
+      case 21: /* pin_mode ::= ONEWIRE */
+#line 91 "firmata_lemon.y"
+{ yygotominor.yy0 = 7; }
+#line 831 "firmata_lemon.c"
+        break;
+      case 22: /* pin_mode ::= STEPPER */
+#line 92 "firmata_lemon.y"
+{ yygotominor.yy0 = 8; }
+#line 836 "firmata_lemon.c"
+        break;
+      case 23: /* pin_mode ::= ENCODER */
+#line 93 "firmata_lemon.y"
+{ yygotominor.yy0 = 9; }
+#line 841 "firmata_lemon.c"
+        break;
+      case 24: /* pin_mode ::= SERIAL */
+#line 94 "firmata_lemon.y"
+{ yygotominor.yy0 = 10; }
+#line 846 "firmata_lemon.c"
+        break;
+      case 25: /* pin_mode ::= PULLUP */
+#line 95 "firmata_lemon.y"
+{ yygotominor.yy0 = 11; }
+#line 851 "firmata_lemon.c"
         break;
       case 26: /* protocol_version ::= byte7 byte7 */
       case 27: /* sysex ::= START_SYSEX sysex_body STOP_SYSEX */ yytestcase(yyruleno==27);
       case 28: /* sysex_body ::= SYSEX_ID */ yytestcase(yyruleno==28);
-#line 66 "firmata_lemon.y"
+#line 97 "firmata_lemon.y"
 {
-    message_.command = PROTO_PROTOCOL_VERSION;
-    message_.proto_maj = yymsp[-1].minor.yy0;
-    message_.proto_min = yymsp[0].minor.yy0;
+    printf("protocol_version...\n");
+    yygotominor.yy5.major = yymsp[-1].minor.yy0;
+    yygotominor.yy5.minor = yymsp[0].minor.yy0;
 }
-#line 801 "firmata_lemon.c"
+#line 862 "firmata_lemon.c"
         break;
       default:
         break;
@@ -836,7 +897,7 @@ static void yy_reduce(
 static void yy_parse_failed(
   yyParser *yypParser           /* The parser */
 ){
-  ParseARG_FETCH;
+  FirmataParseARG_FETCH;
 #ifndef NDEBUG
   if( yyTraceFILE ){
     fprintf(yyTraceFILE,"%sFail!\n",yyTracePrompt);
@@ -845,7 +906,7 @@ static void yy_parse_failed(
   while( yypParser->yyidx>=0 ) yy_pop_parser_stack(yypParser);
   /* Here code is inserted which will be executed whenever the
   ** parser fails */
-  ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
+  FirmataParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 #endif /* YYNOERRORRECOVERY */
 
@@ -857,13 +918,13 @@ static void yy_syntax_error(
   int yymajor,                   /* The major type of the error token */
   YYMINORTYPE yyminor            /* The minor type of the error token */
 ){
-  ParseARG_FETCH;
+  FirmataParseARG_FETCH;
 #define TOKEN (yyminor.yy0)
-#line 16 "firmata_lemon.y"
+#line 36 "firmata_lemon.y"
 
 /*    std::cout << "Syntax error!" << std::endl;*/
-#line 866 "firmata_lemon.c"
-  ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
+#line 927 "firmata_lemon.c"
+  FirmataParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
 /*
@@ -872,7 +933,7 @@ static void yy_syntax_error(
 static void yy_accept(
   yyParser *yypParser           /* The parser */
 ){
-  ParseARG_FETCH;
+  FirmataParseARG_FETCH;
 #ifndef NDEBUG
   if( yyTraceFILE ){
     fprintf(yyTraceFILE,"%sAccept!\n",yyTracePrompt);
@@ -881,12 +942,16 @@ static void yy_accept(
   while( yypParser->yyidx>=0 ) yy_pop_parser_stack(yypParser);
   /* Here code is inserted which will be executed whenever the
   ** parser accepts */
-  ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
+#line 31 "firmata_lemon.y"
+
+    printf("parse_accept: OK\n\n");
+#line 949 "firmata_lemon.c"
+  FirmataParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
 /* The main parser program.
 ** The first argument is a pointer to a structure obtained from
-** "ParseAlloc" which describes the current state of the parser.
+** "FirmataParseAlloc" which describes the current state of the parser.
 ** The second argument is the major token number.  The third is
 ** the minor token.  The fourth optional argument is whatever the
 ** user wants (and specified in the grammar) and is available for
@@ -903,11 +968,11 @@ static void yy_accept(
 ** Outputs:
 ** None.
 */
-void Parse(
+void FirmataParse(
   void *yyp,                   /* The parser */
   int yymajor,                 /* The major token code number */
-  ParseTOKENTYPE yyminor       /* The value for the token */
-  ParseARG_PDECL               /* Optional %extra_argument parameter */
+  FirmataParseTOKENTYPE yyminor       /* The value for the token */
+  FirmataParseARG_PDECL               /* Optional %extra_argument parameter */
 ){
   YYMINORTYPE yyminorunion;
   int yyact;            /* The parser action. */
@@ -935,7 +1000,7 @@ void Parse(
   }
   yyminorunion.yy0 = yyminor;
   yyendofinput = (yymajor==0);
-  ParseARG_STORE;
+  FirmataParseARG_STORE;
 
 #ifndef NDEBUG
   if( yyTraceFILE ){
