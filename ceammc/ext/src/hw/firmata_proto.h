@@ -36,7 +36,7 @@ enum FirmataPinMode {
 
 enum FirmataDigitalPinState {
     PROTO_PIN_LOW = 0,
-    POROT_PIN_HIGH = 1
+    PROTO_PIN_HIGH = 1
 };
 
 enum FirmataParseState {

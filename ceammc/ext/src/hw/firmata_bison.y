@@ -24,6 +24,7 @@ void yyerror(FirmataMessage* msg, const char* s) {
     DIGITAL_IO
     PROTOCOL_VERSION
     SET_PIN_MODE
+    SET_DIGITAL_PIN_VALUE
     START_SYSEX
     STOP_SYSEX
     ERROR_RESET
@@ -58,7 +59,7 @@ message     : ANALOG_IO pin value14 {
                     $$.proto_version.minor = $3.byte;
                 }
             | SET_PIN_MODE pin byte7 {
-                    printf("Set pin mode: %d at pin #%d\n", $2.pin, $3.byte);
+                    printf("Set pin mode #%d = %d\n", $2.pin, $3.byte);
                     $$.command = PROTO_SET_PIN_MODE;
                     $$.pin = $2.pin;
                     switch($3.byte) {
@@ -80,6 +81,12 @@ message     : ANALOG_IO pin value14 {
                         $$.pin_mode = PROTO_PIN_MODE_OUTPUT;
                         break;
                     }
+                }
+            | SET_DIGITAL_PIN_VALUE pin byte7 {
+                    printf("Set pin value #%d = %d\n", $2.pin, $3.byte);
+                    $$.command = PROTO_SET_DIGITAL_PIN_VALUE;
+                    $$.pin = $2.pin;
+                    $$.value = ($3.byte) ? PROTO_PIN_HIGH : PROTO_PIN_LOW;
                 }
             | sysex {}
             | ERROR_RESET   { $$.state = STATE_IN_PROCESS; }

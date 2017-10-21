@@ -133,10 +133,11 @@ extern int firmata_debug;
     FIRMATA_TOKEN_DIGITAL_IO = 259,
     FIRMATA_TOKEN_PROTOCOL_VERSION = 260,
     FIRMATA_TOKEN_SET_PIN_MODE = 261,
-    FIRMATA_TOKEN_START_SYSEX = 262,
-    FIRMATA_TOKEN_STOP_SYSEX = 263,
-    FIRMATA_TOKEN_ERROR_RESET = 264,
-    FIRMATA_TOKEN_BYTE7 = 265
+    FIRMATA_TOKEN_SET_DIGITAL_PIN_VALUE = 262,
+    FIRMATA_TOKEN_START_SYSEX = 263,
+    FIRMATA_TOKEN_STOP_SYSEX = 264,
+    FIRMATA_TOKEN_ERROR_RESET = 265,
+    FIRMATA_TOKEN_BYTE7 = 266
   };
 #endif
 
@@ -165,7 +166,7 @@ void firmata_pstate_delete (firmata_pstate *ps);
 
 /* Copy the second part of user declarations.  */
 
-#line 169 "firmata_bison.tab.c" /* yacc.c:358  */
+#line 170 "firmata_bison.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -381,23 +382,23 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  18
+#define YYFINAL  20
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   26
+#define YYLAST   36
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  11
+#define YYNTOKENS  12
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  8
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  14
+#define YYNRULES  15
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  27
+#define YYNSTATES  30
 
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   265
+#define YYMAXUTOK   266
 
 #define YYTRANSLATE(YYX)                                                \
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -432,15 +433,15 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,     9,    10
+       5,     6,     7,     8,     9,    10,    11
 };
 
 #if FIRMATA_DEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    34,    34,    37,    42,    48,    54,    60,    84,    85,
-      88,    89,    90,    92,    93
+       0,    35,    35,    38,    43,    49,    55,    61,    85,    91,
+      92,    95,    96,    97,    99,   100
 };
 #endif
 
@@ -450,9 +451,9 @@ static const yytype_uint8 yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "ANALOG_IO", "DIGITAL_IO",
-  "PROTOCOL_VERSION", "SET_PIN_MODE", "START_SYSEX", "STOP_SYSEX",
-  "ERROR_RESET", "BYTE7", "$accept", "program", "message", "pin",
-  "value14", "byte7", "sysex", "sysex_body", YY_NULLPTR
+  "PROTOCOL_VERSION", "SET_PIN_MODE", "SET_DIGITAL_PIN_VALUE",
+  "START_SYSEX", "STOP_SYSEX", "ERROR_RESET", "BYTE7", "$accept",
+  "program", "message", "pin", "value14", "byte7", "sysex", "sysex_body", YY_NULLPTR
 };
 #endif
 
@@ -462,14 +463,14 @@ static const char *const yytname[] =
 static const yytype_uint16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265
+     265,   266
 };
 # endif
 
-#define YYPACT_NINF -10
+#define YYPACT_NINF -11
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-10)))
+  (!!((Yystate) == (-11)))
 
 #define YYTABLE_NINF -1
 
@@ -480,9 +481,9 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       0,    -9,    -9,    -9,    -9,    -9,   -10,    16,   -10,   -10,
-     -10,    -9,   -10,    -9,    -9,    -9,   -10,     6,   -10,   -10,
-     -10,    -9,   -10,   -10,   -10,   -10,   -10
+      26,   -10,   -10,   -10,   -10,   -10,   -10,   -11,    18,   -11,
+     -11,   -11,   -10,   -11,   -10,   -10,   -10,   -10,   -11,    -2,
+     -11,   -11,   -11,   -10,   -11,   -11,   -11,   -11,   -11,   -11
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -490,21 +491,21 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,     0,     0,     0,     0,     0,     9,     0,     2,     8,
-      12,     0,    10,     0,     0,     0,    14,     0,     1,     3,
-       4,     0,     5,     6,     7,    13,    11
+       0,     0,     0,     0,     0,     0,     0,    10,     0,     2,
+       9,    13,     0,    11,     0,     0,     0,     0,    15,     0,
+       1,     3,     4,     0,     5,     6,     7,     8,    14,    12
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -10,   -10,    10,    11,    13,    -3,   -10,   -10
+     -11,   -11,     2,     0,    -8,    -3,   -11,   -11
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     7,     8,    11,    20,    12,     9,    17
+      -1,     8,     9,    12,    22,    13,    10,    19
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -512,39 +513,41 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-      14,    10,    16,     1,     2,     3,     4,     5,    21,     6,
-      21,    23,    24,    13,    25,    15,    18,    19,    26,     1,
-       2,     3,     4,     5,     0,     6,    22
+      15,    11,    14,    18,    16,    17,    24,    28,     0,    23,
+      21,    23,    25,    26,    27,     0,     0,     0,    20,     0,
+      29,     1,     2,     3,     4,     5,     6,     0,     7,     1,
+       2,     3,     4,     5,     6,     0,     7
 };
 
 static const yytype_int8 yycheck[] =
 {
-       3,    10,     5,     3,     4,     5,     6,     7,    11,     9,
-      13,    14,    15,     2,     8,     4,     0,     7,    21,     3,
-       4,     5,     6,     7,    -1,     9,    13
+       3,    11,     2,     6,     4,     5,    14,     9,    -1,    12,
+       8,    14,    15,    16,    17,    -1,    -1,    -1,     0,    -1,
+      23,     3,     4,     5,     6,     7,     8,    -1,    10,     3,
+       4,     5,     6,     7,     8,    -1,    10
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,     3,     4,     5,     6,     7,     9,    12,    13,    17,
-      10,    14,    16,    14,    16,    14,    16,    18,     0,    13,
-      15,    16,    15,    16,    16,     8,    16
+       0,     3,     4,     5,     6,     7,     8,    10,    13,    14,
+      18,    11,    15,    17,    15,    17,    15,    15,    17,    19,
+       0,    14,    16,    17,    16,    17,    17,    17,     9,    17
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    11,    12,    12,    13,    13,    13,    13,    13,    13,
-      14,    15,    16,    17,    18
+       0,    12,    13,    13,    14,    14,    14,    14,    14,    14,
+      14,    15,    16,    17,    18,    19
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     1,     2,     3,     3,     3,     3,     1,     1,
-       1,     2,     1,     3,     1
+       0,     2,     1,     2,     3,     3,     3,     3,     3,     1,
+       1,     1,     2,     1,     3,     1
 };
 
 
@@ -1284,58 +1287,58 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 34 "firmata_bison.y" /* yacc.c:1661  */
+#line 35 "firmata_bison.y" /* yacc.c:1661  */
     {
                     *res_msg = (yyvsp[0]);
                     res_msg->state = STATE_DONE; }
-#line 1292 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1295 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 3:
-#line 37 "firmata_bison.y" /* yacc.c:1661  */
+#line 38 "firmata_bison.y" /* yacc.c:1661  */
     {
                     *res_msg = (yyvsp[0]);
                     res_msg->state = STATE_DONE; }
-#line 1300 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1303 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 4:
-#line 42 "firmata_bison.y" /* yacc.c:1661  */
+#line 43 "firmata_bison.y" /* yacc.c:1661  */
     {
                     printf("Analog pin #%d value: %d\n", (yyvsp[-1]).pin, (yyvsp[0]).value);
                     (yyval).command = PROTO_ANALOG_IO_MESSAGE;
                     (yyval).pin = (yyvsp[-1]).pin;
                     (yyval).value = (yyvsp[0]).value;
                 }
-#line 1311 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1314 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 5:
-#line 48 "firmata_bison.y" /* yacc.c:1661  */
+#line 49 "firmata_bison.y" /* yacc.c:1661  */
     {
                     // printf("Digital pin #%d value: %d\n", $2.pin, $3.value);
                     (yyval).command = PROTO_DIGITAL_IO_MESSAGE;
                     (yyval).pin = (yyvsp[-1]).pin;
                     (yyval).value = (yyvsp[0]).value;
                 }
-#line 1322 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1325 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 6:
-#line 54 "firmata_bison.y" /* yacc.c:1661  */
+#line 55 "firmata_bison.y" /* yacc.c:1661  */
     {
                     printf("Protocol version: %d.%d\n", (yyvsp[-1]).byte, (yyvsp[0]).byte);
                     (yyval).command = PROTO_PROTOCOL_VERSION;
                     (yyval).proto_version.major = (yyvsp[-1]).byte;
                     (yyval).proto_version.minor = (yyvsp[0]).byte;
                 }
-#line 1333 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1336 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 7:
-#line 60 "firmata_bison.y" /* yacc.c:1661  */
+#line 61 "firmata_bison.y" /* yacc.c:1661  */
     {
-                    printf("Set pin mode: %d at pin #%d\n", (yyvsp[-1]).pin, (yyvsp[0]).byte);
+                    printf("Set pin mode #%d = %d\n", (yyvsp[-1]).pin, (yyvsp[0]).byte);
                     (yyval).command = PROTO_SET_PIN_MODE;
                     (yyval).pin = (yyvsp[-1]).pin;
                     switch((yyvsp[0]).byte) {
@@ -1358,53 +1361,64 @@ yyreduce:
                         break;
                     }
                 }
-#line 1362 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1365 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 8:
-#line 84 "firmata_bison.y" /* yacc.c:1661  */
-    {}
-#line 1368 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 85 "firmata_bison.y" /* yacc.c:1661  */
+    {
+                    printf("Set pin value #%d = %d\n", (yyvsp[-1]).pin, (yyvsp[0]).byte);
+                    (yyval).command = PROTO_SET_DIGITAL_PIN_VALUE;
+                    (yyval).pin = (yyvsp[-1]).pin;
+                    (yyval).value = ((yyvsp[0]).byte) ? PROTO_PIN_HIGH : PROTO_PIN_LOW;
+                }
+#line 1376 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 9:
-#line 85 "firmata_bison.y" /* yacc.c:1661  */
-    { (yyval).state = STATE_IN_PROCESS; }
-#line 1374 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 91 "firmata_bison.y" /* yacc.c:1661  */
+    {}
+#line 1382 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 10:
-#line 88 "firmata_bison.y" /* yacc.c:1661  */
-    { (yyval).pin = (0xF & (yyvsp[0]).byte); }
-#line 1380 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 92 "firmata_bison.y" /* yacc.c:1661  */
+    { (yyval).state = STATE_IN_PROCESS; }
+#line 1388 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 11:
-#line 89 "firmata_bison.y" /* yacc.c:1661  */
-    { (yyval).value = ((yyvsp[-1]).byte) | ((yyvsp[0]).byte << 7); }
-#line 1386 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 95 "firmata_bison.y" /* yacc.c:1661  */
+    { (yyval).pin = (0xF & (yyvsp[0]).byte); }
+#line 1394 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 12:
-#line 90 "firmata_bison.y" /* yacc.c:1661  */
-    { (yyval).byte = (0x7F & (yyvsp[0]).byte); }
-#line 1392 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 96 "firmata_bison.y" /* yacc.c:1661  */
+    { (yyval).value = ((yyvsp[-1]).byte) | ((yyvsp[0]).byte << 7); }
+#line 1400 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 13:
-#line 92 "firmata_bison.y" /* yacc.c:1661  */
-    { printf("sysex received...\n"); }
-#line 1398 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 97 "firmata_bison.y" /* yacc.c:1661  */
+    { (yyval).byte = (0x7F & (yyvsp[0]).byte); }
+#line 1406 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 14:
-#line 93 "firmata_bison.y" /* yacc.c:1661  */
+#line 99 "firmata_bison.y" /* yacc.c:1661  */
+    { printf("sysex received...\n"); }
+#line 1412 "firmata_bison.tab.c" /* yacc.c:1661  */
+    break;
+
+  case 15:
+#line 100 "firmata_bison.y" /* yacc.c:1661  */
     {}
-#line 1404 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1418 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
 
-#line 1408 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1422 "firmata_bison.tab.c" /* yacc.c:1661  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

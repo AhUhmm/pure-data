@@ -79,6 +79,10 @@ ParserToken FirmataParser::token(uint8_t ch) const
         t.type0 = FIRMATA_TOKEN_SET_PIN_MODE;
         t.v0 = ch;
         return t;
+    case PROTO_SET_DIGITAL_PIN_VALUE:
+        t.type0 = FIRMATA_TOKEN_SET_DIGITAL_PIN_VALUE;
+        t.v0 = ch;
+        return t;
     // mask types
     default: {
         switch (0xF0 & ch) {
