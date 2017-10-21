@@ -22,23 +22,27 @@ FirmataParser::~FirmataParser()
 
 FirmataParser& FirmataParser::operator<<(uint8_t byte)
 {
-    if (status_ != YYPUSH_MORE && msg_.state != STATE_IN_PROCESS) {
+    if (status_ != YYPUSH_MORE || msg_.state != STATE_IN_PROCESS) {
         return *this;
     }
 
     ParserToken t = token(byte);
-    FIRMATA_STYPE type;
-    type = msg_;
-    type.byte = t.v0;
-    status_ = firmata_push_parse(static_cast<firmata_pstate*>(parser_state_), t.type0, &type, &msg_);
+    pushToParser(t.type0, t.v0);
 
     if (status_ == YYPUSH_MORE && t.packed) {
-        type = msg_;
-        type.byte = t.v1;
-        status_ = firmata_push_parse(static_cast<firmata_pstate*>(parser_state_), t.type1, &type, &msg_);
+        pushToParser(t.type1, t.v1);
     }
 
     return *this;
+}
+
+void FirmataParser::pushToParser(int type, int ch)
+{
+    FIRMATA_STYPE t;
+    t = msg_;
+    t.byte = ch;
+
+    status_ = firmata_push_parse(static_cast<firmata_pstate*>(parser_state_), type, &t, &msg_);
 }
 
 bool FirmataParser::isDone() const
@@ -53,7 +57,12 @@ bool FirmataParser::isError() const
 
 void FirmataParser::reset()
 {
+    if (msg_.state == STATE_ERROR) {
+        pushToParser(FIRMATA_TOKEN_ERROR_RESET, 0);
+    }
+
     msg_.state = STATE_IN_PROCESS;
+    status_ = YYPUSH_MORE;
 }
 
 ParserToken FirmataParser::token(uint8_t ch) const

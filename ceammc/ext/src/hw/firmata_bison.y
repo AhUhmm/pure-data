@@ -8,6 +8,8 @@ void yyerror(FirmataMessage* msg, const char* s) {
     msg->state = STATE_ERROR;
 }
 
+#define YYMAXDEPTH 500
+
 %}
 
 %define api.value.type {FirmataMessage}
@@ -24,6 +26,7 @@ void yyerror(FirmataMessage* msg, const char* s) {
     SET_PIN_MODE
     START_SYSEX
     STOP_SYSEX
+    ERROR_RESET
     BYTE7;
 
 %%
@@ -58,6 +61,7 @@ message     : ANALOG_IO pin value14 {
 
                 }
             | sysex {}
+            | ERROR_RESET   { $$.state = STATE_IN_PROCESS; }
 ;
 
 pin         : byte7         { $$.pin = (0xF & $1.byte); };

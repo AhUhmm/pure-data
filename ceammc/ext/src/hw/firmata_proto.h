@@ -34,6 +34,7 @@ typedef struct FirmataProtoVersion {
 typedef struct FirmataMessage {
     enum FirmataProtoCommand command;
     int value;
+    int type;
     unsigned char pin;
     unsigned char byte;
     unsigned char state;

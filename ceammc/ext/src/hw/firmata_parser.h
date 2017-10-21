@@ -22,6 +22,7 @@ class FirmataParser {
 private:
     FirmataParser(const FirmataParser& fp);
     void operator=(const FirmataParser& fp);
+    void pushToParser(int type, int ch);
 
 public:
     FirmataParser();

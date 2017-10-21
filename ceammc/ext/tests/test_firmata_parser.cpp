@@ -19,6 +19,11 @@ TEST_CASE("firmata_parser", "[firmata]")
         REQUIRE(p.msg().proto_version.minor == 5);
         REQUIRE(p.isDone());
 
+        // we should reset
+        p << '\xE4' << '\x02' << '\x06';
+        REQUIRE(p.msg().command == PROTO_PROTOCOL_VERSION);
+        p.reset();
+
         // analog value
         p << '\xE4' << '\x02' << '\x06';
         REQUIRE(p.msg().command == PROTO_ANALOG_IO_MESSAGE);
@@ -27,7 +32,7 @@ TEST_CASE("firmata_parser", "[firmata]")
         REQUIRE(p.isDone());
         p.reset();
 
-        int n = 10000;
+        int n = 1000;
         while (n-- > 0) {
             // digital pin value
             p << '\x92' << '\x03' << '\x06';
@@ -38,5 +43,17 @@ TEST_CASE("firmata_parser", "[firmata]")
             p.reset();
             REQUIRE_FALSE(p.isDone());
         }
+
+        p << 'e' << 'r' << 'r' << 'o' << 'r';
+        REQUIRE(p.isError());
+        REQUIRE_FALSE(p.isDone());
+
+        p.reset();
+        REQUIRE_FALSE(p.isError());
+        p << '\xF9' << '\x02' << '\x05';
+        REQUIRE(p.msg().command == PROTO_PROTOCOL_VERSION);
+        REQUIRE(p.msg().proto_version.major == 2);
+        REQUIRE(p.msg().proto_version.minor == 5);
+        REQUIRE_FALSE(p.isError());
     }
 }
