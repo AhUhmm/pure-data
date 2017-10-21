@@ -32,6 +32,9 @@ TEST_CASE("firmata_parser", "[firmata]")
         REQUIRE(p.isDone());
         p.reset();
 
+        // STACK overflow test
+        // should not overflow because of left recursion used
+        // defualt stack size == 500
         int n = 1000;
         while (n-- > 0) {
             // digital pin value
@@ -55,5 +58,10 @@ TEST_CASE("firmata_parser", "[firmata]")
         REQUIRE(p.msg().proto_version.major == 2);
         REQUIRE(p.msg().proto_version.minor == 5);
         REQUIRE_FALSE(p.isError());
+
+        p.reset();
+        p << '\xF4' << '\x08' << '\x03';
+        REQUIRE(p.isDone());
+        REQUIRE(p.msg().pin == 8);
     }
 }

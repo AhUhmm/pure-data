@@ -46,7 +46,7 @@ message     : ANALOG_IO pin value14 {
                     $$.value = $3.value;
                 }
             | DIGITAL_IO pin value14 {
-                    printf("Digital pin #%d value: %d\n", $2.pin, $3.value);
+                    // printf("Digital pin #%d value: %d\n", $2.pin, $3.value);
                     $$.command = PROTO_DIGITAL_IO_MESSAGE;
                     $$.pin = $2.pin;
                     $$.value = $3.value;
@@ -58,7 +58,28 @@ message     : ANALOG_IO pin value14 {
                     $$.proto_version.minor = $3.byte;
                 }
             | SET_PIN_MODE pin byte7 {
-
+                    printf("Set pin mode: %d at pin #%d\n", $2.pin, $3.byte);
+                    $$.command = PROTO_SET_PIN_MODE;
+                    $$.pin = $2.pin;
+                    switch($3.byte) {
+                    case PROTO_PIN_MODE_INPUT:
+                    case PROTO_PIN_MODE_OUTPUT:
+                    case PROTO_PIN_MODE_ANALOG:
+                    case PROTO_PIN_MODE_PWM:
+                    case PROTO_PIN_MODE_SERVO:
+                    case PROTO_PIN_MODE_I2C:
+                    case PROTO_PIN_MODE_ONEWIRE:
+                    case PROTO_PIN_MODE_STEPPER:
+                    case PROTO_PIN_MODE_ENCODER:
+                    case PROTO_PIN_MODE_SERIAL:
+                    case PROTO_PIN_MODE_PULLUP:
+                        $$.pin_mode = $3.byte;
+                        break;
+                    default:
+                        printf("invalid pin mode value: %d\n", $3.byte);
+                        $$.pin_mode = PROTO_PIN_MODE_OUTPUT;
+                        break;
+                    }
                 }
             | sysex {}
             | ERROR_RESET   { $$.state = STATE_IN_PROCESS; }

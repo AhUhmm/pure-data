@@ -439,8 +439,8 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    34,    34,    37,    42,    48,    54,    60,    63,    64,
-      67,    68,    69,    71,    72
+       0,    34,    34,    37,    42,    48,    54,    60,    84,    85,
+      88,    89,    90,    92,    93
 };
 #endif
 
@@ -1313,7 +1313,7 @@ yyreduce:
   case 5:
 #line 48 "firmata_bison.y" /* yacc.c:1661  */
     {
-                    printf("Digital pin #%d value: %d\n", (yyvsp[-1]).pin, (yyvsp[0]).value);
+                    // printf("Digital pin #%d value: %d\n", $2.pin, $3.value);
                     (yyval).command = PROTO_DIGITAL_IO_MESSAGE;
                     (yyval).pin = (yyvsp[-1]).pin;
                     (yyval).value = (yyvsp[0]).value;
@@ -1335,55 +1335,76 @@ yyreduce:
   case 7:
 #line 60 "firmata_bison.y" /* yacc.c:1661  */
     {
-
+                    printf("Set pin mode: %d at pin #%d\n", (yyvsp[-1]).pin, (yyvsp[0]).byte);
+                    (yyval).command = PROTO_SET_PIN_MODE;
+                    (yyval).pin = (yyvsp[-1]).pin;
+                    switch((yyvsp[0]).byte) {
+                    case PROTO_PIN_MODE_INPUT:
+                    case PROTO_PIN_MODE_OUTPUT:
+                    case PROTO_PIN_MODE_ANALOG:
+                    case PROTO_PIN_MODE_PWM:
+                    case PROTO_PIN_MODE_SERVO:
+                    case PROTO_PIN_MODE_I2C:
+                    case PROTO_PIN_MODE_ONEWIRE:
+                    case PROTO_PIN_MODE_STEPPER:
+                    case PROTO_PIN_MODE_ENCODER:
+                    case PROTO_PIN_MODE_SERIAL:
+                    case PROTO_PIN_MODE_PULLUP:
+                        (yyval).pin_mode = (yyvsp[0]).byte;
+                        break;
+                    default:
+                        printf("invalid pin mode value: %d\n", (yyvsp[0]).byte);
+                        (yyval).pin_mode = PROTO_PIN_MODE_OUTPUT;
+                        break;
+                    }
                 }
-#line 1341 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1362 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 8:
-#line 63 "firmata_bison.y" /* yacc.c:1661  */
+#line 84 "firmata_bison.y" /* yacc.c:1661  */
     {}
-#line 1347 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1368 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 9:
-#line 64 "firmata_bison.y" /* yacc.c:1661  */
+#line 85 "firmata_bison.y" /* yacc.c:1661  */
     { (yyval).state = STATE_IN_PROCESS; }
-#line 1353 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1374 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 10:
-#line 67 "firmata_bison.y" /* yacc.c:1661  */
+#line 88 "firmata_bison.y" /* yacc.c:1661  */
     { (yyval).pin = (0xF & (yyvsp[0]).byte); }
-#line 1359 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1380 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 11:
-#line 68 "firmata_bison.y" /* yacc.c:1661  */
+#line 89 "firmata_bison.y" /* yacc.c:1661  */
     { (yyval).value = ((yyvsp[-1]).byte) | ((yyvsp[0]).byte << 7); }
-#line 1365 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1386 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 12:
-#line 69 "firmata_bison.y" /* yacc.c:1661  */
+#line 90 "firmata_bison.y" /* yacc.c:1661  */
     { (yyval).byte = (0x7F & (yyvsp[0]).byte); }
-#line 1371 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1392 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 13:
-#line 71 "firmata_bison.y" /* yacc.c:1661  */
+#line 92 "firmata_bison.y" /* yacc.c:1661  */
     { printf("sysex received...\n"); }
-#line 1377 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1398 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
   case 14:
-#line 72 "firmata_bison.y" /* yacc.c:1661  */
+#line 93 "firmata_bison.y" /* yacc.c:1661  */
     {}
-#line 1383 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1404 "firmata_bison.tab.c" /* yacc.c:1661  */
     break;
 
 
-#line 1387 "firmata_bison.tab.c" /* yacc.c:1661  */
+#line 1408 "firmata_bison.tab.c" /* yacc.c:1661  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

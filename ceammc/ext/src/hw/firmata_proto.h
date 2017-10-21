@@ -20,6 +20,25 @@ enum FirmataProtoCommand {
     PROTO_SYSTEM_RESET = 0xFF
 };
 
+enum FirmataPinMode {
+    PROTO_PIN_MODE_INPUT = 0,
+    PROTO_PIN_MODE_OUTPUT = 1,
+    PROTO_PIN_MODE_ANALOG = 2,
+    PROTO_PIN_MODE_PWM = 3,
+    PROTO_PIN_MODE_SERVO = 4,
+    PROTO_PIN_MODE_I2C = 6,
+    PROTO_PIN_MODE_ONEWIRE = 7,
+    PROTO_PIN_MODE_STEPPER = 8,
+    PROTO_PIN_MODE_ENCODER = 9,
+    PROTO_PIN_MODE_SERIAL = 10,
+    PROTO_PIN_MODE_PULLUP = 11
+};
+
+enum FirmataDigitalPinState {
+    PROTO_PIN_LOW = 0,
+    POROT_PIN_HIGH = 1
+};
+
 enum FirmataParseState {
     STATE_IN_PROCESS = 0,
     STATE_DONE,
@@ -35,6 +54,7 @@ typedef struct FirmataMessage {
     enum FirmataProtoCommand command;
     int value;
     int type;
+    enum FirmataPinMode pin_mode;
     unsigned char pin;
     unsigned char byte;
     unsigned char state;
