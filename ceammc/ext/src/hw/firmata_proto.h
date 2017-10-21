@@ -20,6 +20,12 @@ enum FirmataProtoCommand {
     PROTO_SYSTEM_RESET = 0xFF
 };
 
+enum FirmataParseState {
+    STATE_IN_PROCESS = 0,
+    STATE_DONE,
+    STATE_ERROR
+};
+
 typedef struct FirmataProtoVersion {
     unsigned char major;
     unsigned char minor;
@@ -30,7 +36,7 @@ typedef struct FirmataMessage {
     int value;
     unsigned char pin;
     unsigned char byte;
-    unsigned char done;
+    unsigned char state;
     FirmataProtoVersion proto_version;
 
 } FirmataMessage;
@@ -47,6 +53,5 @@ void FirmataParse(void* yyp, int yymajor, /* The major token code number */
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif // FIRMATA_PROTO_H

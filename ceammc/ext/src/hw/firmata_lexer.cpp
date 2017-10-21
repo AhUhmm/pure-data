@@ -39,9 +39,9 @@ LexerToken FirmataLexer::token(unsigned char ch) const
         case PROTO_ANALOG_IO_MESSAGE:
             t.packed = 1;
             t.type0 = FIRMATA_ANALOG_IO;
-            t.v0 = 0xF0 & ch;
+            t.v0 = (0xF0 & ch);
             t.type1 = FIRMATA_BYTE7;
-            t.v1 = 0x0F & ch;
+            t.v1 = (0x0F & ch);
             break;
         case PROTO_DIGITAL_IO_MESSAGE:
             t.packed = 1;
